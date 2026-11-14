@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keda-scaler
+  labels: { app: keda-scaler }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: keda-scaler }
+  template:
+    metadata:
+      labels: { app: keda-scaler }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: keda-scaler
+          image: keda-scaler
+          ports:
+            - { name: grpc, containerPort: 4350 }
+            - { name: metrics, containerPort: 8080 }
+          env:
+            - { name: PROM_URL, value: "http://kube-prometheus-stack-prometheus.monitoring.svc:9090" }
+            - { name: QUERY, value: 'sum(rate(http_requests_total{namespace="demo",path="/work"}[1m]))' }
+            - { name: TARGET_RPS, value: "50" }
+            - { name: WINDOW, value: "300" }
+            - { name: STEP, value: "15" }
+            - { name: FORECAST_HORIZON, value: "120" }
+            - { name: EWMA_ALPHA, value: "0.5" }
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { memory: 128Mi }
+          readinessProbe:
+            tcpSocket: { port: grpc }
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket: { port: grpc }
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }

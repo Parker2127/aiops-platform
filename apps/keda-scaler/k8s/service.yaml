@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: keda-scaler
+  labels: { app: keda-scaler }
+spec:
+  selector: { app: keda-scaler }
+  ports:
+    - { name: grpc, port: 4350, targetPort: grpc, appProtocol: grpc }
+    - { name: metrics, port: 8080, targetPort: metrics }
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: keda-scaler
+  labels: { app: keda-scaler }
+spec:
+  selector:
+    matchLabels: { app: keda-scaler }
+  endpoints:
+    - { port: metrics, interval: 15s }

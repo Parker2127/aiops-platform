@@ -1,0 +1,230 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aiops-dashboard
+  labels:
+    grafana_dashboard: "1" # picked up by the kube-prometheus-stack Grafana sidecar
+data:
+  aiops-dashboard.json: |
+    {
+      "title": "AIOps - Predictive autoscaling",
+      "uid": "aiops-predictive-scaling",
+      "time": {
+        "from": "now-30m",
+        "to": "now"
+      },
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "Request rate vs replicas (the forecast leads the load)",
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 11
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps",
+              "custom": {
+                "lineWidth": 2,
+                "fillOpacity": 0
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "replicas"
+                },
+                "properties": [
+                  {
+                    "id": "custom.axisPlacement",
+                    "value": "right"
+                  },
+                  {
+                    "id": "unit",
+                    "value": "none"
+                  },
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "line"
+                  },
+                  {
+                    "id": "custom.lineInterpolation",
+                    "value": "stepAfter"
+                  }
+                ]
+              }
+            ]
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total{namespace=\"demo\",path=\"/work\"}[1m]))",
+              "legendFormat": "actual rps",
+              "refId": "A"
+            },
+            {
+              "expr": "max(scaler_forecast_rps)",
+              "legendFormat": "forecast rps (t+horizon)",
+              "refId": "B"
+            },
+            {
+              "expr": "max(kube_deployment_status_replicas{namespace=\"demo\",deployment=\"demo-app\"})",
+              "legendFormat": "replicas",
+              "refId": "C"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Scaler: current / forecast / reported",
+          "gridPos": {
+            "x": 0,
+            "y": 11,
+            "w": 12,
+            "h": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps",
+              "custom": {
+                "lineWidth": 2,
+                "fillOpacity": 0
+              }
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "max(scaler_current_rps)",
+              "legendFormat": "current",
+              "refId": "A"
+            },
+            {
+              "expr": "max(scaler_forecast_rps)",
+              "legendFormat": "forecast",
+              "refId": "B"
+            },
+            {
+              "expr": "max(scaler_reported_rps)",
+              "legendFormat": "reported to KEDA",
+              "refId": "C"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Replicas: expected by scaler vs actual",
+          "gridPos": {
+            "x": 12,
+            "y": 11,
+            "w": 12,
+            "h": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "lineWidth": 2,
+                "fillOpacity": 0
+              }
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "max(scaler_expected_replicas)",
+              "legendFormat": "expected (scaler)",
+              "refId": "A"
+            },
+            {
+              "expr": "max(kube_deployment_status_replicas{namespace=\"demo\",deployment=\"demo-app\"})",
+              "legendFormat": "actual",
+              "refId": "B"
+            },
+            {
+              "expr": "max(kube_horizontalpodautoscaler_status_desired_replicas{namespace=\"demo\"})",
+              "legendFormat": "HPA desired",
+              "refId": "C"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Log detector: anomalies by type",
+          "gridPos": {
+            "x": 0,
+            "y": 19,
+            "w": 12,
+            "h": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "lineWidth": 2,
+                "fillOpacity": 0
+              }
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "sum by (finding_type) (increase(detector_anomalies_total[1m]))",
+              "legendFormat": "{{finding_type}}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Log detector: alerts sent",
+          "gridPos": {
+            "x": 12,
+            "y": 19,
+            "w": 12,
+            "h": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "lineWidth": 2,
+                "fillOpacity": 0
+              }
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "expr": "sum by (finding_type) (increase(detector_alerts_sent_total[5m]))",
+              "legendFormat": "{{finding_type}}",
+              "refId": "A"
+            }
+          ]
+        }
+      ]
+    }

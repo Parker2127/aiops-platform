@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: keda-scaler
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1" # before demo-app, whose ScaledObject points at it
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Parker2127/aiops-platform.git
+    targetRevision: main
+    path: apps/keda-scaler/k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: keda-scaler
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - SkipDryRunOnMissingResource=true
+    retry:
+      limit: 10
+      backoff: { duration: 15s, factor: 2, maxDuration: 3m }

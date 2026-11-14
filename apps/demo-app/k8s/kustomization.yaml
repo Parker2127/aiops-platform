@@ -6,7 +6,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - servicemonitor.yaml
-  - hpa.yaml
+  - scaledobject.yaml
 images:
   - name: demo-app
     newName: 818651034041.dkr.ecr.us-east-1.amazonaws.com/aiops/demo-app
