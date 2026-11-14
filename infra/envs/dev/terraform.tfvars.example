@@ -1,0 +1,5 @@
+# cp terraform.tfvars.example terraform.tfvars
+# Restrict the EKS public API endpoint to your IP: curl -s https://checkip.amazonaws.com
+api_public_access_cidrs = ["203.0.113.10/32"]
+
+# enable_interface_endpoints = true   # +~$58/month, keeps ECR/STS/Logs traffic off the NAT

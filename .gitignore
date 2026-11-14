@@ -34,3 +34,7 @@ kubeconfig*
 .DS_Store
 .idea/
 .vscode/
+
+# Local tfvars (may hold your IP); commit only the .example
+*.tfvars
+!*.tfvars.example
