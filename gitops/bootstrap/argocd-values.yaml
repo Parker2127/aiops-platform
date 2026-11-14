@@ -1,0 +1,49 @@
+# Helm values for the one-time Argo CD install (scripts/deploy-argocd.sh).
+# Non-HA, trimmed for a 2-node spot cluster.
+global:
+  domain: localhost
+
+configs:
+  params:
+    # TLS is terminated by kubectl port-forward locally; no ingress in this project.
+    server.insecure: true
+  cm:
+    timeout.reconciliation: 60s
+
+dex:
+  enabled: false
+
+notifications:
+  enabled: false
+
+redis-ha:
+  enabled: false
+
+controller:
+  replicas: 1
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { memory: 768Mi }
+
+server:
+  replicas: 1
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { memory: 256Mi }
+
+repoServer:
+  replicas: 1
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { memory: 512Mi }
+
+applicationSet:
+  replicas: 1
+  resources:
+    requests: { cpu: 25m, memory: 64Mi }
+    limits: { memory: 128Mi }
+
+redis:
+  resources:
+    requests: { cpu: 25m, memory: 32Mi }
+    limits: { memory: 128Mi }

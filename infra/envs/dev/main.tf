@@ -45,4 +45,7 @@ resource "aws_eks_addon" "ebs_csi" {
   service_account_role_arn    = module.ebs_csi_irsa.role_arn
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
+
+  # The controller needs schedulable nodes before the add-on can go ACTIVE.
+  depends_on = [module.eks]
 }

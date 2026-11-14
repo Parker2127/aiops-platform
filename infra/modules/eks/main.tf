@@ -139,16 +139,28 @@ resource "aws_eks_node_group" "this" {
     ignore_changes = [scaling_config[0].desired_size]
   }
 
-  depends_on = [aws_iam_role_policy_attachment.node]
+  depends_on = [
+    aws_iam_role_policy_attachment.node,
+    aws_eks_addon.vpc_cni,
+  ]
 }
 
 # --- Core add-ons ----------------------------------------------------------
 
+# Created before the node group so nodes boot with prefix delegation on:
+# t3.medium goes from 17 to 110 pods, enough for the platform + app scale-out.
 resource "aws_eks_addon" "vpc_cni" {
   cluster_name                = aws_eks_cluster.this.name
   addon_name                  = "vpc-cni"
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
+
+  configuration_values = jsonencode({
+    env = {
+      ENABLE_PREFIX_DELEGATION = "true"
+      WARM_PREFIX_TARGET       = "1"
+    }
+  })
 }
 
 resource "aws_eks_addon" "kube_proxy" {
