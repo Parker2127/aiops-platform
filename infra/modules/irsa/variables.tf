@@ -28,8 +28,8 @@ variable "policy_arns" {
   default     = []
 }
 
-variable "policy_json" {
-  description = "Optional inline policy document (JSON)"
-  type        = string
-  default     = null
+variable "inline_policies" {
+  description = "Inline policy documents (JSON), keyed by a short static name"
+  type        = map(string)
+  default     = {}
 }

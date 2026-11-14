@@ -54,7 +54,7 @@ module "finops_irsa" {
   service_account   = "finops-optimizer"
   oidc_provider_arn = module.eks.oidc_provider_arn
   oidc_provider_url = module.eks.oidc_provider_url
-  policy_json       = data.aws_iam_policy_document.finops.json
+  inline_policies   = { main = data.aws_iam_policy_document.finops.json }
 }
 
 output "finops_role_arn" {

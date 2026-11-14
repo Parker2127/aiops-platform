@@ -36,10 +36,13 @@ resource "aws_iam_role_policy_attachment" "managed" {
   policy_arn = each.value
 }
 
+# for_each over a map whose keys are static at the call site: the policy JSON
+# itself is often unknown until apply (it references ARNs), which a
+# `count = var.policy_json == null ? 0 : 1` could not plan.
 resource "aws_iam_role_policy" "inline" {
-  count = var.policy_json == null ? 0 : 1
+  for_each = var.inline_policies
 
-  name   = "${var.name}-inline"
+  name   = "${var.name}-${each.key}"
   role   = aws_iam_role.this.id
-  policy = var.policy_json
+  policy = each.value
 }

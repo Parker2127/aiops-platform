@@ -160,5 +160,5 @@ module "log_detector_irsa" {
   service_account   = "log-detector"
   oidc_provider_arn = module.eks.oidc_provider_arn
   oidc_provider_url = module.eks.oidc_provider_url
-  policy_json       = data.aws_iam_policy_document.log_detector.json
+  inline_policies   = { main = data.aws_iam_policy_document.log_detector.json }
 }
