@@ -1,0 +1,63 @@
+# Dev/test environment for the whole monorepo (uv). Each app pins its own
+# runtime deps in apps/<name>/requirements.txt for its container image.
+[project]
+name = "aiops-platform"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "ruff>=0.14",
+  "pytest>=8",
+  "moto[ec2,s3,secretsmanager]>=5.1",
+  # union of app runtime deps, so every test suite runs from one venv
+  "flask>=3.1",
+  "gunicorn>=23",
+  "prometheus-client>=0.21",
+  "scikit-learn==1.9.1",
+  "numpy>=2.2",
+  "pandas>=2.2",
+  "joblib>=1.4",
+  "boto3>=1.40",
+  "kubernetes>=31",
+  "fastapi>=0.115",
+  "uvicorn>=0.32",
+  "httpx>=0.27",
+  "requests>=2.32",
+  "grpcio==1.85.1",
+  "grpcio-tools==1.85.1",
+  "protobuf>=6",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "ml",
+  "apps/demo-app/src",
+  "apps/log-detector/src",
+  "apps/keda-scaler/src",
+  "apps/finops-optimizer/src",
+]
+testpaths = ["ml/tests", "apps"]
+addopts = "-q --import-mode=importlib"
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+extend-exclude = ["**/*_pb2.py", "**/*_pb2_grpc.py", "**/*_pb2.pyi"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF"]
+ignore = ["S101", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S105", "S106", "S108", "S311"]
+"ml/generate_logs.py" = ["S311"]
+"apps/demo-app/src/demo_app/chaos.py" = ["S311"]
+"apps/demo-app/src/demo_app/app.py" = ["S311"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["demo_app", "log_detector", "keda_scaler", "finops_optimizer", "features"]

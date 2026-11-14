@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-app
+  labels: { app: demo-app }
+spec:
+  # No `replicas:` on purpose - the autoscaler owns it. A fixed value here would
+  # make Argo CD self-heal fight the HPA on every scale event.
+  selector:
+    matchLabels: { app: demo-app }
+  template:
+    metadata:
+      labels: { app: demo-app }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: demo-app
+          image: demo-app
+          ports:
+            - { name: http, containerPort: 8080 }
+          env:
+            - { name: BACKGROUND_LOG_RATE, value: "2" }
+            - { name: CHAOS_LOG_RATE, value: "5" }
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { memory: 192Mi }
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 15
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - { name: tmp, emptyDir: {} }
