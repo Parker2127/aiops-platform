@@ -1,0 +1,36 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+*.egg-info/
+
+# ML artifacts / data
+*.joblib
+*.pkl
+model.tar.gz
+ml/data/
+
+# Secrets / local env
+.env
+.env.*
+*.pem
+kubeconfig*
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
