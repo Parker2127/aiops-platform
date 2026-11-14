@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# No top-level `namespace:` - the ClusterRole/Binding are cluster-scoped.
+resources:
+  - namespace.yaml
+  - serviceaccount.yaml
+  - cronjob.yaml
+images:
+  - name: finops-optimizer
+    newName: 818651034041.dkr.ecr.us-east-1.amazonaws.com/aiops/finops-optimizer
+    newTag: latest # scripts/build-push.sh pins this to the git SHA
+configMapGenerator:
+  - name: finops-optimizer-config
+    namespace: finops
+    literals:
+      - AWS_REGION=us-east-1
+      - DRY_RUN=true # report-only; set false to delete unattached volumes (>= MIN_VOLUME_AGE_DAYS, no aiops:keep tag)
+      - MIN_VOLUME_AGE_DAYS=7
+      - SNAPSHOT_AGE_DAYS=30
+      - K8S_SCAN=true
+      - LLM_ENABLED=true
+      - BEDROCK_MODEL_ID=us.anthropic.claude-haiku-5-5
+      - REPORT_BUCKET=aiops-artifacts-818651034041
+      - SLACK_SECRET_ID=aiops/slack-webhook
