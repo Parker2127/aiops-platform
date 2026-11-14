@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# No top-level `namespace:` - the RBAC objects must stay in `demo`.
+resources:
+  - namespace.yaml
+  - serviceaccount.yaml
+  - rbac.yaml
+  - deployment.yaml
+  - service.yaml
+images:
+  - name: log-detector
+    newName: 818651034041.dkr.ecr.us-east-1.amazonaws.com/aiops/log-detector
+    newTag: latest # scripts/build-push.sh pins this to the git SHA
+# Hash-suffixed ConfigMap: changing any value (e.g. a new MODEL_S3_URI written by
+# `ml/train_sagemaker.py --pin`) renames it and rolls the Deployment. That is how
+# a model version ships: a git commit, synced by Argo CD.
+configMapGenerator:
+  - name: log-detector-config
+    namespace: log-detector
+    literals:
+      - MODE=k8s
+      - TARGET_NAMESPACE=demo
+      - LABEL_SELECTOR=app=demo-app
+      - MODEL_S3_URI=s3://aiops-artifacts-818651034041/models/REPLACE_AFTER_TRAINING/output/model.tar.gz
+      - SLACK_SECRET_ID=aiops/slack-webhook
+      - BEDROCK_MODEL_ID=us.anthropic.claude-haiku-5-5
+      - LLM_ENABLED=true
+      - AWS_REGION=us-east-1
+      - ALERT_COOLDOWN_SECONDS=300

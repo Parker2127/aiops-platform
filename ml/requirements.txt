@@ -1,0 +1,5 @@
+# Installed by the SageMaker scikit-learn container on top of its base image.
+# scikit-learn is pinned to exactly what apps/log-detector serves with, so the
+# pickled model loads without version-skew warnings or behaviour changes.
+scikit-learn==1.9.1
+joblib==1.6.0

@@ -29,3 +29,15 @@ output "ecr_repository_urls" {
 output "kubeconfig_command" {
   value = "aws eks update-kubeconfig --region ${var.region} --name ${module.eks.cluster_name}"
 }
+
+output "artifacts_bucket" {
+  value = aws_s3_bucket.artifacts.bucket
+}
+
+output "sagemaker_role_arn" {
+  value = aws_iam_role.sagemaker.arn
+}
+
+output "log_detector_role_arn" {
+  value = module.log_detector_irsa.role_arn
+}

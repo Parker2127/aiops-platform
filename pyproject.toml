@@ -42,7 +42,8 @@ pythonpath = [
   "apps/finops-optimizer/src",
 ]
 testpaths = ["ml/tests", "apps"]
-addopts = "-q --import-mode=importlib"
+addopts = "-q --import-mode=importlib -p no:cacheprovider"
+filterwarnings = ["ignore::DeprecationWarning:starlette.*", "ignore:Using `httpx`"]
 
 [tool.ruff]
 line-length = 110
